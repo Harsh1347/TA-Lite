@@ -6,7 +6,7 @@
 
 
 ## Teacher Portal
-###Feature	Description
+### Feature	Description
 #### Set Constraints / Hint Levels	Define depth of hints (Level 1–3) per topic or question type
 #### Edit Prompt Templates	Modify the LLM prompt for hinting or explanation style
 #### Upload Course Materials	PDFs, notes, textbook sections — stored for retrieval
