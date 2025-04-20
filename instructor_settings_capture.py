@@ -1,5 +1,26 @@
 import streamlit as st
+import os
 from datetime import datetime
+import json
+from datetime import date
+
+
+os.makedirs("teacher_data/config", exist_ok=True)
+CONFIG_FILE = "teacher_data/config/settings_v2.json"
+if os.path.exists(CONFIG_FILE):
+    with open(CONFIG_FILE, "r") as f:
+        config = json.load(f)
+else:
+    config = {
+            "goals": "",
+            "depth": "",
+            "direct_answers":"",
+            "directness": "",
+            "references": "",
+            "external_ref":"",
+            "autonomy": 3,
+            "directness": ""
+    }
 
 st.set_page_config(page_title="Professor AI Preferences", layout="centered")
 
@@ -26,7 +47,7 @@ with col1:
     direct_answers = st.radio("Direct answers or Hints only?", ["Direct answers", "Hints Only", "Direct answers only when needed"], index=2)
     references = st.radio("References to course content?", ["Yes", "No", "Sometimes"], index=2)
 with col2:
-    questions = st.radio("Thought-provoking questions?", ["Yes", "No", "Sometimes"], index=0)
+    questions = st.radio("Thought-provoking questions?", ["Yes", "No", "Sometimes"], index=2)
     external_ref = st.radio("References to external resources?", ["Yes", "No", "When Unavailable in course content"], index=2)
 
 st.header("6. Depth of explanation?")
@@ -100,7 +121,7 @@ if st.button("Submit"):
 
     if external_ref == "Yes":
         ai_behavior_lines.append("    - **Make sure to Recommend external resources.**")
-    if external_ref == "Yes":
+    if external_ref == "No":
         ai_behavior_lines.append("    - Don't Recommend external resources.")
     elif external_ref == "When Unavailable in course content":
         ai_behavior_lines.append("    - Use external resources only when unavailable in course content.")
@@ -128,11 +149,27 @@ You can choose to use the RAG agent we have to fetch any answers from the course
 **YOUR MAIN FOCUS IS TO HELP THE STUDENT UNDERSTAND THE TOPIC, NOT TO ANSWER THE QUESTION**
 Your responses should align with these preferences to balance between promoting self-learning and giving direct answers.
 """
-
     st.markdown("### ✨ Generated Prompt")
     st.text_area("LLM Prompt", final_prompt, height=350)
     
+    #Save prompt to config
+
+    new_config = {
+        "goals": goals,
+        "depth": depth_preferences,
+        "direct_answers":direct_answers,
+        "directness": directness,
+        "references": references,
+        "external_ref":external_ref,
+        "autonomy": autonomy,
+        "directness": directness
+        #"exam_date": str(exam_date)
+    }
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(new_config, f, indent=4)
+    st.success("✅ Configuration saved successfully.")
+
     #Save prompt to file
-    prompt_filename = f"instructor_settings_prompt_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    prompt_filename = f"instructor_settings_prompt.txt"
     with open('instructor_prompts/'+prompt_filename, "w") as f:
         f.write(final_prompt)

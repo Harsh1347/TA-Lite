@@ -1,0 +1,9 @@
+{
+    "goals": "Provide direct answers",
+    "depth": "No",
+    "direct_answers": "Hints Only",
+    "directness": "Indirect - Lead them to answer with hints",
+    "references": "Sometimes",
+    "external_ref": "Yes",
+    "autonomy": 3
+}
