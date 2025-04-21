@@ -1,0 +1,138 @@
+Overview and Introduction
+
+Content:
+
+What is a large language model?  
+NLP system building basics
+Home assignment:
+
+Tensor basics: https://pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html Links to an external site.
+Word representations and language modeling
+
+Content:
+
+Bag-of-words
+Subword models
+Continuous word embeddings
+Neural networks
+Language modeling 
+Count-based language models
+Neural-network-based language models
+Measuring language model performance: accuracy, likelihood, and perplexity
+Reading material: 
+
+Word Representations
+Neural Machine Translation of Rare Words with Subword Units Links to an external site. (Sennrich et al. 2015) 
+Efficient Estimation of Word Representations in Vector Space Links to an external site. (Mikolov et al. 2013)
+J+M (3ed) Chapter 6: Vector Semantics, pages 1-7, 17-26, and review 7-16 Links to an external site.
+J+M (3ed) Chapter 7: Neural Networks Links to an external site.
+Language Modeling
+J+M (3ed) Chapter 3, Language Modeling with N-grams, pages 1-16 Links to an external site.
+A Neural Probabilistic Language Model Links to an external site. (Bengio et al. 2003)
+Transformers
+
+Content:
+
+Attention
+Transformer Architecture
+Multi-Head Attention
+Positional Encodings
+Layer Normalization
+Reading material: 
+
+Jay Alammar 2018. The Illustrated Transformer Links to an external site.. 
+Vaswani et al. 2017. Attention is all you need Links to an external site.. Advances in Neural Information Processing Systems. 
+Devlin et al. 2018. Bert: Pre-training of deep bidirectional transformers for language understanding Links to an external site.. 
+Raffel et al. 2019. Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer Links to an external site.. 
+Yenduri et al. 2023. Generative Pre-trained Transformer: A Comprehensive Review on Enabling Technologies, Potential Applications, Emerging Challenges, and Future Directions Links to an external site.. 
+Pre-training and pre-trained models
+
+Content:
+
+Overview of pre-training
+Pre-training objectives
+Pre-training data
+Open vs. closed models
+Representative pre-trained models
+Reading material: 
+
+Touvron et al. 2023. LLaMA: Open and Efficient Foundation Language Models Links to an external site.. 
+Kaplan et al. 2020 Scaling Laws for Neural Language Models Links to an external site. 
+Wei et al. 2022. Emergent Abilities of Large Language Models Links to an external site. 
+Fine-tuning and instruction tuning
+
+Content:
+
+Fine-tuning and Instruction Tuning
+Parameter Efficient Fine-tuning
+Instruction Tuning Datasets
+Reading material: 
+
+Lester et al. 2022. The Power of Scale for Parameter-Efficient Prompt Tuning Links to an external site. 
+Wei et al. 2022. Finetuned Language Models Are Zero-Shot Learners Links to an external site.  
+Hu et al. 2021. LoRA: Low-Rank Adaptation of Large Language Models Links to an external site.. 
+Prompting
+
+Content:
+
+Prompting Methods
+Prompt Engineering
+Types of Reasoning
+Chain-of-thought and Variants
+Reading material: 
+
+Prompt Engineering Guide Links to an external site.
+Lilian Weng's blogpost on prompt engineering Links to an external site. 
+Xiao and Zhu 2025. Foundations of Large Language Models Links to an external site.. Chapter 3. Prompting. 
+Wei et al. 2022. Chain-of-Thought Prompting Elicits Reasoning in Large Language Models Links to an external site.. 
+Wang et al., 2023. Self-Consistency Improves Chain of Thought Reasoning in Language Models Links to an external site.. 
+Aligning large language models to human preferences
+
+Content:
+
+Methods to Gather Feedback
+Reinforcement Learning
+Direct preference optimization
+Group relative policy optimization
+Reading material:
+
+Ziegler et al (OpenAI). 2019. Fine-tuning language models from human preferences Links to an external site.. 
+Ouyang et al. (OpenAI) 2022. Training language models to follow instructions with human feedback Links to an external site.. In NeurIPS.
+Rafailov et al. 2023. Direct preference optimization: Your language model is secretly a reward model Links to an external site.. Links to an external site.
+DeepSeek-AI 2025. DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning Links to an external site.. 
+Zhihong et al. 2024. DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models Links to an external site.. 
+Retrieval-Augmented Generation (RAG)
+
+Content:
+
+Retrieval Methods
+Retrieval Augmented Generation
+Reading material: 
+
+TDB
+LLM agents
+
+Content:
+
+Agent Basics
+Agent Use Cases/Environments
+Tool Use
+Multi-agent Systems
+Reading material: 
+
+TDB
+AI Safety
+
+Content:
+
+Bias in LLMs
+Redteaming
+Safeguarding LLMs
+Reading material: 
+
+TDB
+Vision LLMs
+
+Content:
+
+Vision LLMs
