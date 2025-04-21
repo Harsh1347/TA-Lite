@@ -17,7 +17,7 @@ import torch
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
-from rerank import rerank
+
 
 llm = ChatOllama(model="mistral")
 db = FAISS.load_local(
@@ -32,6 +32,29 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 # Initialize Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def rerank(query, docs, top_n=3):
+    pairs = [(query, doc.page_content) for doc in docs]
+    
+    inputs = tokenizer(
+        [f"{q} [SEP] {d}" for q, d in pairs],
+        padding=True,
+        truncation=True,
+        return_tensors="pt"
+    )
+
+    with torch.no_grad():
+        scores = model(**inputs).logits.squeeze(-1)
+
+    # Sort by score
+    sorted_indices = torch.argsort(scores, descending=True)
+    top_docs = [docs[i] for i in sorted_indices[:top_n]]
+
+    return top_docs
+tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-reranker-base")
+model = AutoModelForSequenceClassification.from_pretrained("BAAI/bge-reranker-base")
+# model.eval()
+
 
 # Hard-coded file mappings
 LECTURE_FILES = {
