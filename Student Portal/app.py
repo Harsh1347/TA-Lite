@@ -7,6 +7,24 @@ import streamlit_confetti as stc
 from supabase import create_client, Client
 import json
 from typing import Optional, Dict, Any, List
+import json
+import requests
+import sys
+import os
+import json
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_ollama import ChatOllama
+from rerank import rerank
+
+llm = ChatOllama(model="mistral")
+db = FAISS.load_local(
+    r"faiss_index",
+    HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2"),
+    allow_dangerous_deserialization=True
+)
 
 # Supabase Configuration
 SUPABASE_URL = "https://sulehfldyspavcngrjaf.supabase.co"
@@ -469,6 +487,44 @@ def main():
     
     # Lecture selection
     st.markdown("### 📚 Select Lecture")
+    
+    with st.form(key="Doubt Solving"):
+        question_asked = st.text_area("Ask You Doubt!")
+        submit_button = st.form_submit_button()
+
+    if submit_button:
+        pdf_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "pdf"}})
+        transcript_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "transcript"}})
+        pdf_chunks = pdf_retriever.invoke(question_asked)
+        transcript_chunks = transcript_retriever.invoke(question_asked)
+        pdf_top = rerank(question_asked, pdf_chunks, top_n=3)
+        transcript_top = rerank(question_asked, transcript_chunks, top_n=3)
+        final_docs = pdf_top + transcript_top
+        final_rerank = rerank(question_asked, final_docs, top_n=5)
+
+        context = "\n\n".join([
+            f"[{doc.metadata['type'].upper()} - {doc.metadata['source']}] {doc.page_content}"
+            for doc in final_rerank
+        ])
+        prompt = f"""
+        You are a helpful assistant. Based on the following course materials:
+
+        {context}
+
+        Student asked:
+        {question_asked}
+
+        Respond with a hint or Indirect - Lead them to answer with hints. 
+        DO NOT GIVE DIRECT ANSWERS!!!!
+
+        EXPLAIN LIKE I'M 18 Year Old 
+        """
+
+        response = llm.invoke(prompt)
+        rag_output = (response.content)
+        st.text_area(label="Answer to your question",value=rag_output+f"\nResources:{[doc.metadata['source'] for doc in final_docs]}")
+
+    
     lecture_options = [f"Lecture {format_lecture_number(i)}: {LECTURE_TITLES[format_lecture_number(i)]}" 
                       for i in range(1, 11)]
     
