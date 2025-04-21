@@ -1,0 +1,10 @@
+langchain>=0.1.0
+langchain-community>=0.0.10
+langchain-ollama>=0.0.1
+streamlit>=1.28.0
+streamlit-confetti==0.1.0
+python-docx>=0.8.11
+PyPDF2>=3.0.0
+supabase>=2.0.0
+python-dotenv>=1.0.0
+faiss-cpu>=1.7.4 
