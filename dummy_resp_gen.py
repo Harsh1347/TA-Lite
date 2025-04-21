@@ -53,11 +53,6 @@ AI_agent = AIAgent(str(sys_prompt_captured))
 #### QUESTION HERE ####
 question_asked = "What is the primary advantage of LoRA, and how does LoRA modify the behavior of pre-trained models during fine-tuning?"
 
-AI_agent.generate_ai_response(question_asked)
-
-q2 = input("Your response:\n")
-AI_agent.generate_ai_response(str(q2))
-
 ######## EXTRACTING SEARCH KEYWORD FROM DOUBT QUERY ##########
 os.makedirs("teacher_data/config", exist_ok=True)
 CONFIG_FILE = "teacher_data/config/settings_v2.json"
@@ -65,6 +60,17 @@ if os.path.exists(CONFIG_FILE):
     with open(CONFIG_FILE, "r") as f:
         config = json.load(f)
 print("\n\n######## EXTRACTING SEARCH KEYWORD FROM DOUBT QUERY ##########")
+
+if config['external_ref'] == 'Yes' or config['external_ref'] == "When Unavailable in course content":
+    AI_agent.generate_ai_response(question_asked+ rag_output)
+
+    q2 = input("Your response:\n")
+    AI_agent.generate_ai_response(str(q2))
+else:
+    AI_agent.generate_ai_response(question_asked)
+
+    q2 = input("Your response:\n")
+    AI_agent.generate_ai_response(str(q2))
 
 if config['external_ref'] == "Yes":
     AI_agent_search_key = AIAgent(str("Examine the question and tell me what is the most important concept a student needs to understand to answer this question? \n **DO NOT ANSWER THE QUESTION. ONLY give direct answer with no extra details**\n Examples responses: 'Neural Networks', 'Transformers', 'Encoding', 'Tokenization'"))

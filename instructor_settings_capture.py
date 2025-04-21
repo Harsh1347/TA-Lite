@@ -120,11 +120,9 @@ if st.button("Submit"):
         ai_behavior_lines.append("    - Sometimes refer to lecture slides.")
 
     if external_ref == "Yes":
-        ai_behavior_lines.append("    - **Make sure to Recommend external resources.**")
-    if external_ref == "No":
-        ai_behavior_lines.append("    - Don't Recommend external resources.")
+        references_line = "**MAKE SURE TO USE THE BELOW RAG GENERATED CONTENT FOR CONTEXT TO GENERATE THE RESPONSE IF RELEVANT but not limited to this**\n"
     elif external_ref == "When Unavailable in course content":
-        ai_behavior_lines.append("    - Use external resources only when unavailable in course content.")
+        references_line = "**TRY TO USE THE BELOW RAG GENERATED CONTENT FOR CONTEXT TO GENERATE THE RESPONSE IF RELEVANT but not limited to this**\n"
 
     # Depth of explanation
     depth_line = ""
@@ -145,9 +143,10 @@ Your guidance style should follow these professor preferences:
 {depth_line}
 {directness_line}
 
-You can choose to use the RAG agent we have to fetch any answers from the course material.
+You can choose to use the RAG generated content we have to fetch any answers from the course material.
 **YOUR MAIN FOCUS IS TO HELP THE STUDENT UNDERSTAND THE TOPIC, NOT TO ANSWER THE QUESTION**
 Your responses should align with these preferences to balance between promoting self-learning and giving direct answers.
+{references_line}
 """
     st.markdown("### ✨ Generated Prompt")
     st.text_area("LLM Prompt", final_prompt, height=350)
