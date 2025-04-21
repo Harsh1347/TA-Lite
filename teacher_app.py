@@ -11,7 +11,7 @@ CONFIG_FILE = "teacher_data/config/settings.json"
 
 # Sidebar navigation
 st.sidebar.title("👩‍🏫 Teacher Portal")
-page = st.sidebar.radio("Go to", ["1. Configuration Settings", "2. Upload Class Material"])
+page = st.sidebar.radio("Go to", ["1. Configuration Settings", "2. Upload Class Material", "3. App Analyics"])
 
 # Page 1: Configuration Settings
 if page.startswith("1"):
@@ -61,3 +61,7 @@ elif page.startswith("2"):
                 with open(file_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
                 st.success(f"✅ Uploaded: {uploaded_file.name}")
+
+# Page 3: Upload Class Material
+elif page.startswith("3"):
+    st.title("What Are Student Struggling With?")
