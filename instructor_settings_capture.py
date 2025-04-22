@@ -112,16 +112,16 @@ if st.button("Submit"):
     elif questions == "Sometimes":
         ai_behavior_lines.append("    - Sometimes ask thought-provoking questions.")
 
-    if references == "Yes":
-        ai_behavior_lines.append("    - **Make sure to refer to lecture slides.**")
-    if references == "No":
-        ai_behavior_lines.append("    - Don't refer to lecture slides.")
-    elif references == "Sometimes":
-        ai_behavior_lines.append("    - Sometimes refer to lecture slides.")
+    #if external_ref == "Yes":
+    #    ai_behavior_lines.append("    - **Make sure to refer to lecture slides.**")
+    #if external_ref == "No":
+    #    ai_behavior_lines.append("    - Don't refer to lecture slides.")
+    #elif external_ref == "When Unavailable in course content":
+    #    ai_behavior_lines.append("    - Sometimes refer to lecture slides.")
 
-    if external_ref == "Yes":
+    if references == "Yes":
         references_line = "**MAKE SURE TO USE THE BELOW RAG GENERATED CONTENT FOR CONTEXT TO GENERATE THE RESPONSE IF RELEVANT but not limited to this**\n"
-    elif external_ref == "When Unavailable in course content":
+    elif references == "Sometimes":
         references_line = "**TRY TO USE THE BELOW RAG GENERATED CONTENT FOR CONTEXT TO GENERATE THE RESPONSE IF RELEVANT but not limited to this**\n"
     else:  
         references_line = ""
