@@ -18,6 +18,53 @@ from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 
+class AIAgent:
+    def __init__(self, system_prompt):
+
+        self.full_transcript = [
+            {
+                "role": "system", 
+                "content": f"{system_prompt}"
+            }
+        ]
+
+    def generate_ai_response(self, quesss):
+
+        self.full_transcript.append({"role": "user", "content": quesss})
+        print("AI agent Response:")
+
+        API_KEY="sk-ea09f95e06c740f2b3b983763f702b72"
+        URL="https://rc-156-87.rci.uits.iu.edu/api/chat/completions"
+
+        headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {API_KEY}"
+                }
+        
+        messages = {"model": "Ministral-8B-Instruct-2410-GPTQ",
+            "messages": self.full_transcript
+            }
+        json_payload = json.dumps(messages)
+        response = requests.post(URL, headers=headers, data=json_payload)
+        
+        response_json = response.json()
+        #print(response_json)
+        assistant_reply = response_json["choices"][0]["message"]["content"] 
+        self.full_transcript.append({
+            "role": "assistant",
+            "content": assistant_reply
+        })
+        print(assistant_reply)
+        return assistant_reply
+
+with open('instructor_prompts/instructor_settings_prompt.txt', 'r') as file:
+    sys_prompt_captured = file.read()
+AI_agent = AIAgent(str(sys_prompt_captured))
+
+CONFIG_FILE = "teacher_data/config/settings_v2.json"
+if os.path.exists(CONFIG_FILE):
+    with open(CONFIG_FILE, "r") as f:
+        config = json.load(f)
 
 llm = ChatOllama(model="mistral")
 db = FAISS.load_local(
@@ -648,6 +695,22 @@ def main():
                 # Display the current answer in an expandable container
                 st.markdown("### 📝 Answer")
                 st.markdown(rag_output)
+                st.markdown("**Sources:**")
+                st.markdown(", ".join(sources))
+
+                if config['external_ref'] == 'Yes' or config['external_ref'] == "When Unavailable in course content":
+                    final_response = AI_agent.generate_ai_response(question_asked+ rag_output)
+
+                    #q2 = input("Your response:\n")
+                    #AI_agent.generate_ai_response(str(q2))
+                else:
+                    final_response = AI_agent.generate_ai_response(question_asked)
+
+                    #q2 = input("Your response:\n")
+                    #AI_agent.generate_ai_response(str(q2))
+                
+                st.markdown("### 📝 Answer")
+                st.markdown(final_response)
                 st.markdown("**Sources:**")
                 st.markdown(", ".join(sources))
         
