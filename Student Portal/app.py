@@ -508,132 +508,272 @@ def main():
     # Login section
     render_login()
     
-    # Lecture selection
-    st.markdown("### 📚 Select Lecture")
+    # Create sidebar for navigation
+    with st.sidebar:
+        st.markdown("## What's on your mind?")
+        selected_option = st.radio(
+            "Choose an option:",
+            ["Lecture Review", "Ask Questions", "Test Yourself"],
+            index=0
+        )
     
-    with st.form(key="Doubt Solving"):
-        question_asked = st.text_area("Ask You Doubt!")
-        submit_button = st.form_submit_button()
-
-    if submit_button:
-        pdf_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "pdf"}})
-        transcript_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "transcript"}})
-        pdf_chunks = pdf_retriever.invoke(question_asked)
-        transcript_chunks = transcript_retriever.invoke(question_asked)
-        pdf_top = rerank(question_asked, pdf_chunks, top_n=3)
-        transcript_top = rerank(question_asked, transcript_chunks, top_n=3)
-        final_docs = pdf_top + transcript_top
-        final_rerank = rerank(question_asked, final_docs, top_n=5)
-
-        context = "\n\n".join([
-            f"[{doc.metadata['type'].upper()} - {doc.metadata['source']}] {doc.page_content}"
-            for doc in final_rerank
-        ])
-        prompt = f"""
-        You are a helpful assistant. Based on the following course materials:
-
-        {context}
-
-        Student asked:
-        {question_asked}
-
-        Respond with a hint or Indirect - Lead them to answer with hints. 
-        DO NOT GIVE DIRECT ANSWERS!!!!
-
-        EXPLAIN LIKE I'M 18 Year Old 
-        """
-
-        response = llm.invoke(prompt)
-        rag_output = (response.content)
-        st.text_area(label="Answer to your question",value=rag_output+f"\nResources:{[doc.metadata['source'] for doc in final_docs]}")
-
-    
-    lecture_options = [f"Lecture {format_lecture_number(i)}: {LECTURE_TITLES[format_lecture_number(i)]}" 
-                      for i in range(1, 11)]
-    
-    selected_lecture = st.selectbox(
-        "Which lecture would you like help with?",
-        lecture_options,
-        index=None,
-        placeholder="Select a lecture..."
-    )
-    
-    if selected_lecture:
-        # Extract lecture number
-        lecture_num = format_lecture_number(int(selected_lecture.split(':')[0].split()[-1]))
-        st.session_state.current_lecture = lecture_num
+    if selected_option == "Lecture Review":
+        # Lecture selection (only shown for Lecture Review)
+        st.markdown("### 📚 Select Lecture")
+        lecture_options = [f"Lecture {format_lecture_number(i)}: {LECTURE_TITLES[format_lecture_number(i)]}" 
+                          for i in range(1, 11)]
         
-        # Material type selection
-        st.markdown("### 📑 Select Material Type")
-        col1, col2 = st.columns(2)
+        selected_lecture = st.selectbox(
+            "Which lecture would you like help with?",
+            lecture_options,
+            index=None,
+            placeholder="Select a lecture..."
+        )
         
-        with col1:
-            if st.button("📊 Lecture Slides", use_container_width=True):
-                st.session_state.material_type = "slides"
-                if load_lecture_material(lecture_num, "slides"):
-                    st.success("Lecture slides loaded successfully!")
-                    st.session_state.action = None
-                    st.rerun()
-        
-        with col2:
-            if st.button("📝 Lecture Transcript", use_container_width=True):
-                st.session_state.material_type = "transcript"
-                if load_lecture_material(lecture_num, "transcript"):
-                    st.success("Lecture transcript loaded successfully!")
-                    st.session_state.action = None
-                    st.rerun()
-        
-        # Show action selection if material is loaded
-        if st.session_state.vector_store and st.session_state.material_type:
-            st.markdown("### 🎯 What would you like to do?")
+        if selected_lecture:
+            # Extract lecture number
+            lecture_num = format_lecture_number(int(selected_lecture.split(':')[0].split()[-1]))
+            st.session_state.current_lecture = lecture_num
             
-            # Action buttons in columns
-            col1, col2, col3 = st.columns(3)
-            
-            material_type_display = "slides" if st.session_state.material_type == "slides" else "transcript"
+            # Material type selection
+            st.markdown("### 📑 Select Material Type")
+            col1, col2 = st.columns(2)
             
             with col1:
-                if st.button("📋 Summarize", use_container_width=True):
-                    st.session_state.action = "📋 Summarize"
-                    st.session_state.summary = None
-                    st.session_state.notes = None
-                    with st.spinner("🤔 Analyzing and summarizing the content..."):
-                        summary = generate_summary(st.session_state.vector_store)
-                        st.session_state.summary = summary
-                    st.rerun()
+                if st.button("📊 Lecture Slides", use_container_width=True):
+                    st.session_state.material_type = "slides"
+                    if load_lecture_material(lecture_num, "slides"):
+                        st.success("Lecture slides loaded successfully!")
+                        st.session_state.action = None
+                        st.rerun()
             
             with col2:
-                if st.button("📚 Make Notes", use_container_width=True):
-                    st.session_state.action = "📚 Make Notes"
-                    st.session_state.summary = None
-                    st.session_state.notes = None
-                    with st.spinner("🤔 Generating comprehensive study notes..."):
-                        notes = generate_study_notes(st.session_state.vector_store)
-                        st.session_state.notes = notes
-                    st.rerun()
+                if st.button("📝 Lecture Transcript", use_container_width=True):
+                    st.session_state.material_type = "transcript"
+                    if load_lecture_material(lecture_num, "transcript"):
+                        st.success("Lecture transcript loaded successfully!")
+                        st.session_state.action = None
+                        st.rerun()
             
-            with col3:
-                if st.button("❓ Ask Questions", use_container_width=True):
-                    st.session_state.action = "❓ Ask Questions"
-                    st.session_state.summary = None
-                    st.session_state.notes = None
-                    st.rerun()
-            
-            st.markdown("---")
-            
-            # Display content based on action
-            if st.session_state.action == "📋 Summarize" and st.session_state.summary:
-                st.markdown(f"### 📝 Summary from {material_type_display}")
+            # Show content based on selected option
+            if st.session_state.vector_store and st.session_state.material_type:
+                material_type_display = "slides" if st.session_state.material_type == "slides" else "transcript"
+                
+                st.markdown("### 📋 Lecture Review")
+                st.markdown("Choose what you'd like to review:")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    if st.button("📋 Generate Summary", use_container_width=True):
+                        st.session_state.action = "📋 Summarize"
+                        st.session_state.summary = None
+                        st.session_state.notes = None
+                        with st.spinner("🤔 Analyzing and summarizing the content..."):
+                            summary = generate_summary(st.session_state.vector_store)
+                            st.session_state.summary = summary
+                        st.rerun()
+                
+                with col2:
+                    if st.button("📚 Generate Study Notes", use_container_width=True):
+                        st.session_state.action = "📚 Make Notes"
+                        st.session_state.summary = None
+                        st.session_state.notes = None
+                        with st.spinner("🤔 Generating comprehensive study notes..."):
+                            notes = generate_study_notes(st.session_state.vector_store)
+                            st.session_state.notes = notes
+                        st.rerun()
+                
+                # Display content based on action
+                if st.session_state.action == "📋 Summarize" and st.session_state.summary:
+                    st.markdown(f"### 📝 Summary from {material_type_display}")
+                    st.markdown("---")
+                    st.write(st.session_state.summary)
+                
+                elif st.session_state.action == "📚 Make Notes" and st.session_state.notes:
+                    st.markdown(f"### 📚 Study Notes from {material_type_display}")
+                    st.markdown("---")
+                    st.write(st.session_state.notes)
+    
+    elif selected_option == "Ask Questions":
+        st.markdown("### ❓ Ask Questions")
+        st.markdown("Ask any question about the course content:")
+        
+        with st.form(key="Question Form"):
+            question_asked = st.text_area("Your Question:", placeholder="Type your question here...", height=100)
+            submit_button = st.form_submit_button("Get Answer")
+
+        if submit_button and question_asked:
+            with st.spinner("🤔 Thinking about your answer..."):
+                pdf_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "pdf"}})
+                transcript_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "transcript"}})
+                pdf_chunks = pdf_retriever.invoke(question_asked)
+                transcript_chunks = transcript_retriever.invoke(question_asked)
+                pdf_top = rerank(question_asked, pdf_chunks, top_n=3)
+                transcript_top = rerank(question_asked, transcript_chunks, top_n=3)
+                final_docs = pdf_top + transcript_top
+                final_rerank = rerank(question_asked, final_docs, top_n=5)
+
+                context = "\n\n".join([
+                    f"[{doc.metadata['type'].upper()} - {doc.metadata['source']}] {doc.page_content}"
+                    for doc in final_rerank
+                ])
+                prompt = f"""
+                You are a helpful assistant. Based on the following course materials:
+
+                {context}
+
+                Student asked:
+                {question_asked}
+
+                Respond with a hint or Indirect - Lead them to answer with hints. 
+                DO NOT GIVE DIRECT ANSWERS!!!!
+
+                EXPLAIN LIKE I'M 18 Year Old 
+                """
+
+                response = llm.invoke(prompt)
+                rag_output = response.content
+                sources = [doc.metadata['source'] for doc in final_docs]
+                
+                # Add to QA history
+                qa_pair = {
+                    'question': question_asked,
+                    'answer': rag_output,
+                    'sources': sources,
+                    'timestamp': datetime.now().strftime("%I:%M %p")
+                }
+                st.session_state.qa_history.insert(0, qa_pair)  # Add to beginning of list
+                
+                # Display the current answer in an expandable container
+                st.markdown("### 📝 Answer")
+                st.markdown(rag_output)
+                st.markdown("**Sources:**")
+                st.markdown(", ".join(sources))
+        
+        # Display QA History
+        if st.session_state.qa_history:
+            st.markdown("### 📚 Previous Questions & Answers")
+            for i, qa in enumerate(st.session_state.qa_history):
+                with st.expander(f"Q: {qa['question'][:100]}... ({qa['timestamp']})"):
+                    st.markdown("**Question:**")
+                    st.markdown(qa['question'])
+                    st.markdown("**Answer:**")
+                    st.markdown(qa['answer'])
+                    st.markdown("**Sources:**")
+                    st.markdown(", ".join(qa['sources']))
+    
+    elif selected_option == "Test Yourself":
+        st.markdown("### 📝 Test Yourself")
+        st.markdown("Generate questions to test your understanding:")
+        
+        with st.form(key="Test Form"):
+            topic = st.text_area("Topic to test:", placeholder="Enter a specific topic or concept you want to test yourself on...")
+            num_questions = st.slider("Number of questions:", min_value=1, max_value=5, value=3)
+            submit_test = st.form_submit_button("Generate Questions")
+
+        if submit_test and topic:
+            with st.spinner("🤔 Generating test questions..."):
+                # Get relevant content for the topic
+                pdf_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "pdf"}})
+                transcript_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "transcript"}})
+                pdf_chunks = pdf_retriever.invoke(topic)
+                transcript_chunks = transcript_retriever.invoke(topic)
+                pdf_top = rerank(topic, pdf_chunks, top_n=3)
+                transcript_top = rerank(topic, transcript_chunks, top_n=3)
+                final_docs = pdf_top + transcript_top
+                final_rerank = rerank(topic, final_docs, top_n=5)
+
+                context = "\n\n".join([
+                    f"[{doc.metadata['type'].upper()} - {doc.metadata['source']}] {doc.page_content}"
+                    for doc in final_rerank
+                ])
+                
+                # Generate questions using Mistral
+                prompt = f"""
+                Based on the following course materials, generate {num_questions} multiple-choice questions about "{topic}".
+                Each question should have 4 options (A, B, C, D) with only one correct answer.
+                Include an explanation for the correct answer.
+                
+                Course materials:
+                {context}
+                
+                Format each question as follows:
+                
+                Q1: [Question text]
+                A) [Option A]
+                B) [Option B]
+                C) [Option C]
+                D) [Option D]
+                Correct Answer: [Letter]
+                Explanation: [Brief explanation]
+                
+                ---
+                
+                Q2: [Question text]
+                ...
+                """
+                
+                response = llm.invoke(prompt)
+                questions = response.content
+                
+                # Display questions in an interactive format
+                st.markdown("### 📝 Test Questions")
                 st.markdown("---")
-                st.write(st.session_state.summary)
-            
-            elif st.session_state.action == "📚 Make Notes" and st.session_state.notes:
-                st.markdown(f"### 📚 Study Notes from {material_type_display}")
-                st.markdown("---")
-                st.write(st.session_state.notes)
-            
-            elif st.session_state.action == "❓ Ask Questions":
-                render_qa_section(lecture_num)
+                
+                # Split questions by "---" or "Q" followed by a number
+                question_blocks = questions.split("---")
+                
+                for i, block in enumerate(question_blocks):
+                    if not block.strip():
+                        continue
+                        
+                    st.markdown(f"#### Question {i+1}")
+                    
+                    # Extract question text and options
+                    lines = block.strip().split("\n")
+                    question_text = lines[0].split(":", 1)[1].strip() if ":" in lines[0] else lines[0].strip()
+                    st.markdown(f"**{question_text}**")
+                    
+                    # Display options as radio buttons
+                    options = {}
+                    for line in lines[1:5]:
+                        if line.startswith(("A)", "B)", "C)", "D)")):
+                            option_letter = line[0]
+                            option_text = line[2:].strip()
+                            options[option_letter] = option_text
+                    
+                    # Create radio buttons for options
+                    selected_option = st.radio(
+                        f"Select your answer for Question {i+1}:",
+                        options=list(options.keys()),
+                        format_func=lambda x: f"{x}) {options[x]}",
+                        key=f"q{i}"
+                    )
+                    
+                    # Check if user has selected an answer
+                    if selected_option:
+                        # Extract correct answer and explanation
+                        correct_answer = None
+                        explanation = ""
+                        
+                        for line in lines:
+                            if line.startswith("Correct Answer:"):
+                                correct_answer = line.split(":", 1)[1].strip()
+                            elif line.startswith("Explanation:"):
+                                explanation = line.split(":", 1)[1].strip()
+                        
+                        # Show feedback
+                        if correct_answer:
+                            if selected_option == correct_answer:
+                                st.success("✅ Correct!")
+                            else:
+                                st.error(f"❌ Incorrect. The correct answer is {correct_answer}.")
+                            
+                            if explanation:
+                                st.info(f"**Explanation:** {explanation}")
+                    
+                    st.markdown("---")
 
 if __name__ == "__main__":
     main() 
