@@ -17,6 +17,7 @@ import torch
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
+from search_agent.main import run_agent
 
 class AIAgent:
     def __init__(self, system_prompt):
