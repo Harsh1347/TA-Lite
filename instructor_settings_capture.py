@@ -123,11 +123,14 @@ if st.button("Submit"):
         references_line = "**MAKE SURE TO USE THE BELOW RAG GENERATED CONTENT FOR CONTEXT TO GENERATE THE RESPONSE IF RELEVANT but not limited to this**\n"
     elif external_ref == "When Unavailable in course content":
         references_line = "**TRY TO USE THE BELOW RAG GENERATED CONTENT FOR CONTEXT TO GENERATE THE RESPONSE IF RELEVANT but not limited to this**\n"
+    else:  
+        references_line = ""
 
     # Depth of explanation
     depth_line = ""
     if depth_preferences == "Yes":
         depth_line = "- Responses should adapt to the student's level of understanding."
+
 
     # Directness style
     directness_line = f"- When student is confused, the approach should be: {directness}."
