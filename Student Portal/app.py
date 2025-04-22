@@ -646,74 +646,92 @@ def main():
         st.markdown("### ❓ Ask Questions")
         st.markdown("Ask any question about the course content:")
         
-        with st.form(key="Question Form"):
-            question_asked = st.text_area("Your Question:", placeholder="Type your question here...", height=100)
-            submit_button = st.form_submit_button("Get Answer")
+        # Initialize chat history
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
-        if submit_button and question_asked:
-            with st.spinner("🤔 Thinking about your answer..."):
-                pdf_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "pdf"}})
-                transcript_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "transcript"}})
-                pdf_chunks = pdf_retriever.invoke(question_asked)
-                transcript_chunks = transcript_retriever.invoke(question_asked)
-                pdf_top = rerank(question_asked, pdf_chunks, top_n=3)
-                transcript_top = rerank(question_asked, transcript_chunks, top_n=3)
-                final_docs = pdf_top + transcript_top
-                final_rerank = rerank(question_asked, final_docs, top_n=5)
-
-                context = "\n\n".join([
-                    f"[{doc.metadata['type'].upper()} - {doc.metadata['source']}] {doc.page_content}"
-                    for doc in final_rerank
-                ])
-                prompt = f"""
-                You are a helpful assistant. Based on the following course materials:
-
-                {context}
-
-                Student asked:
-                {question_asked}
-
-                Respond with a hint or Indirect - Lead them to answer with hints. 
-                DO NOT GIVE DIRECT ANSWERS!!!!
-
-                EXPLAIN LIKE I'M 18 Year Old 
-                """
-
-                response = llm.invoke(prompt)
-                rag_output = response.content
-                sources = [doc.metadata['source'] for doc in final_docs]
-                
-                # Add to QA history
-                qa_pair = {
-                    'question': question_asked,
-                    'answer': rag_output,
-                    'sources': sources,
-                    'timestamp': datetime.now().strftime("%I:%M %p")
-                }
-                st.session_state.qa_history.insert(0, qa_pair)  # Add to beginning of list
-                
-                # Display the current answer in an expandable container
-                st.markdown("### 📝 Answer")
-                st.markdown(rag_output)
-                st.markdown("**Sources:**")
-                st.markdown(", ".join(sources))
-
-                if config['external_ref'] == 'Yes' or config['external_ref'] == "When Unavailable in course content":
-                    final_response = AI_agent.generate_ai_response(question_asked+ rag_output)
-
-                    #q2 = input("Your response:\n")
-                    #AI_agent.generate_ai_response(str(q2))
-                else:
-                    final_response = AI_agent.generate_ai_response(question_asked)
-
-                    #q2 = input("Your response:\n")
-                    #AI_agent.generate_ai_response(str(q2))
-                
-                st.markdown("### 📝 Answer")
-                st.markdown(final_response)
-                st.markdown("**Sources:**")
-                st.markdown(", ".join(sources))
+        if question_asked := st.chat_input("What is up?"):
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "content": question_asked})
+            # Display user message in chat message container
+            with st.chat_message("user"):
+                st.markdown(question_asked)
         
+            # Display assistant response in chat message container
+            with st.chat_message("assistant"):
+
+#        with st.form(key="Question Form"):
+#            question_asked = st.text_area("Your Question:", placeholder="Type your question here...", height=100)
+#            submit_button = st.form_submit_button("Get Answer")
+
+        #if submit_button and question_asked:
+                with st.spinner("🤔 Thinking about your answer..."):
+                    pdf_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "pdf"}})
+                    transcript_retriever = db.as_retriever(search_kwargs={"k": 5, "filter": {"type": "transcript"}})
+                    pdf_chunks = pdf_retriever.invoke(question_asked)
+                    transcript_chunks = transcript_retriever.invoke(question_asked)
+                    pdf_top = rerank(question_asked, pdf_chunks, top_n=3)
+                    transcript_top = rerank(question_asked, transcript_chunks, top_n=3)
+                    final_docs = pdf_top + transcript_top
+                    final_rerank = rerank(question_asked, final_docs, top_n=5)
+
+                    context = "\n\n".join([
+                        f"[{doc.metadata['type'].upper()} - {doc.metadata['source']}] {doc.page_content}"
+                        for doc in final_rerank
+                    ])
+                    prompt = f"""
+                    You are a helpful assistant. Based on the following course materials:
+
+                    {context}
+
+                    Student asked:
+                    {question_asked}
+
+                    Respond with a hint or Indirect - Lead them to answer with hints. 
+                    DO NOT GIVE DIRECT ANSWERS!!!!
+
+                    EXPLAIN LIKE I'M 18 Year Old 
+                    """
+
+                    response = llm.invoke(prompt)
+                    rag_output = response.content
+                    sources = [doc.metadata['source'] for doc in final_docs]
+
+                    # Add to QA history
+                    qa_pair = {
+                        'question': question_asked,
+                        'answer': rag_output,
+                        'sources': sources,
+                        'timestamp': datetime.now().strftime("%I:%M %p")
+                    }
+                    st.session_state.qa_history.insert(0, qa_pair)  # Add to beginning of list
+
+                    # Display the current answer in an expandable container
+                    st.markdown("### 📝 Answer")
+                    st.markdown(rag_output)
+                    st.markdown("**Sources:**")
+                    st.markdown(", ".join(sources))
+
+                    if config['external_ref'] == 'Yes' or config['external_ref'] == "When Unavailable in course content":
+                        final_response = AI_agent.generate_ai_response(question_asked+ rag_output)
+
+                        #q2 = input("Your response:\n")
+                        #AI_agent.generate_ai_response(str(q2))
+                    else:
+                        final_response = AI_agent.generate_ai_response(question_asked)
+
+                        #q2 = input("Your response:\n")
+                        #AI_agent.generate_ai_response(str(q2))
+
+                    #st.markdown("### 📝 Answer")
+                    #st.markdown(final_response)
+                    #st.markdown("**Sources:**")
+                    #st.markdown(", ".join(sources))
+            st.session_state.messages.append({"role": "assistant", "content": "### 📝 Answer\n"+response+"**Sources:**"+", ".join(sources)})
+
         # Display QA History
         if st.session_state.qa_history:
             st.markdown("### 📚 Previous Questions & Answers")
