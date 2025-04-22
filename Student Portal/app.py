@@ -7,11 +7,10 @@ import streamlit_confetti as stc
 from supabase import create_client, Client
 import json
 from typing import Optional, Dict, Any, List
-import json
+
 import requests
 import sys
 import os
-import json
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 from langchain_community.vectorstores import FAISS
@@ -57,11 +56,11 @@ class AIAgent:
         print(assistant_reply)
         return assistant_reply
 
-with open('instructor_prompts/instructor_settings_prompt.txt', 'r') as file:
+with open('../instructor_prompts/instructor_settings_prompt.txt', 'r') as file:
     sys_prompt_captured = file.read()
 AI_agent = AIAgent(str(sys_prompt_captured))
 
-CONFIG_FILE = "teacher_data/config/settings_v2.json"
+CONFIG_FILE = "../teacher_data/config/settings_v2.json"
 if os.path.exists(CONFIG_FILE):
     with open(CONFIG_FILE, "r") as f:
         config = json.load(f)
@@ -540,6 +539,17 @@ def load_lecture_material(lecture_num: str, material_type: str) -> bool:
         st.error(f"Error loading material: {str(e)}")
         return False
 
+# Function to save only the first student question to JSON
+def save_question_to_json(question: str):
+    """Save the first question the student asks to student_questions.json"""
+    try:
+        path = os.path.join(os.path.dirname(__file__), 'student_questions.json')
+        data = [{'question': question, 'timestamp': datetime.now().isoformat()}]
+        with open(path, 'w') as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        st.error(f"Error saving question: {e}")
+
 def main():
     """Main function to run the Streamlit app"""
     st.set_page_config(page_title="TA-Lite", layout="wide")
@@ -551,6 +561,10 @@ def main():
     
     # Initialize session state
     init_session_state()
+    
+    # Track whether we've logged the first question
+    if 'first_question_logged' not in st.session_state:
+        st.session_state.first_question_logged = False
     
     # Login section
     render_login()
@@ -656,10 +670,14 @@ def main():
         if question_asked := st.chat_input("What is up?"):
             # Add user message to chat history
             st.session_state.messages.append({"role": "user", "content": question_asked})
+            # Log only the first question to JSON
+            if not st.session_state.first_question_logged:
+                save_question_to_json(question_asked)
+                st.session_state.first_question_logged = True
             # Display user message in chat message container
             with st.chat_message("user"):
                 st.markdown(question_asked)
-        
+            
             # Display assistant response in chat message container
             with st.chat_message("assistant"):
 
@@ -710,10 +728,10 @@ def main():
                     st.session_state.qa_history.insert(0, qa_pair)  # Add to beginning of list
 
                     # Display the current answer in an expandable container
-                    st.markdown("### 📝 Answer")
-                    st.markdown(rag_output)
-                    st.markdown("**Sources:**")
-                    st.markdown(", ".join(sources))
+                    #st.markdown("### 📝 Answer")
+                    #st.markdown(rag_output)
+                    #st.markdown("**Sources:**")
+                    #st.markdown(", ".join(sources))
 
                     if config['external_ref'] == 'Yes' or config['external_ref'] == "When Unavailable in course content":
                         final_response = AI_agent.generate_ai_response(question_asked+ rag_output)
@@ -730,7 +748,7 @@ def main():
                     #st.markdown(final_response)
                     #st.markdown("**Sources:**")
                     #st.markdown(", ".join(sources))
-                    resp2 = st.write_stream("### 📝 Answer\n"+final_response+"**Sources:**"+", ".join(sources))
+                    resp2 = st.write("### 📝 Answer\n"+final_response+"**Sources:**"+", ".join(sources))
             st.session_state.messages.append({"role": "assistant", "content": resp2})
 
         # Display QA History
@@ -817,43 +835,11 @@ def main():
                     question_text = lines[0].split(":", 1)[1].strip() if ":" in lines[0] else lines[0].strip()
                     st.markdown(f"**{question_text}**")
                     
-                    # Display options as radio buttons
-                    options = {}
-                    for line in lines[1:5]:
-                        if line.startswith(("A)", "B)", "C)", "D)")):
-                            option_letter = line[0]
-                            option_text = line[2:].strip()
-                            options[option_letter] = option_text
-                    
-                    # Create radio buttons for options
-                    selected_option = st.radio(
-                        f"Select your answer for Question {i+1}:",
-                        options=list(options.keys()),
-                        format_func=lambda x: f"{x}) {options[x]}",
-                        key=f"q{i}"
+                    # Provide a free-form text input for the student to write their answer
+                    student_answer = st.text_input(
+                        f"Your Answer for Question {i+1}:",
+                        key=f"answer_{i}"
                     )
-                    
-                    # Check if user has selected an answer
-                    if selected_option:
-                        # Extract correct answer and explanation
-                        correct_answer = None
-                        explanation = ""
-                        
-                        for line in lines:
-                            if line.startswith("Correct Answer:"):
-                                correct_answer = line.split(":", 1)[1].strip()
-                            elif line.startswith("Explanation:"):
-                                explanation = line.split(":", 1)[1].strip()
-                        
-                        # Show feedback
-                        if correct_answer:
-                            if selected_option == correct_answer:
-                                st.success("✅ Correct!")
-                            else:
-                                st.error(f"❌ Incorrect. The correct answer is {correct_answer}.")
-                            
-                            if explanation:
-                                st.info(f"**Explanation:** {explanation}")
                     
                     st.markdown("---")
 
