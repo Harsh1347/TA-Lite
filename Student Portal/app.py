@@ -733,7 +733,12 @@ def main():
                     #st.markdown(rag_output)
                     #st.markdown("**Sources:**")
                     #st.markdown(", ".join(sources))
-
+                    resources_list = ""
+                    if config['external_ref'] == "Yes":
+                        AI_agent_search_key = AIAgent(str("Examine the question and tell me what is the most important concept a student needs to understand to answer this question? \n **DO NOT ANSWER THE QUESTION. ONLY give direct answer with no extra details**\n Examples responses: 'Neural Networks', 'Transformers', 'Encoding', 'Tokenization'"))
+                        search_key = AI_agent_search_key.generate_ai_response(question_asked)
+                        print(f"Search key Identified: {search_key}")
+                        resources_list = "External resources you can refer to: "+run_agent(search_key)
                     if config['external_ref'] == 'Yes' or config['external_ref'] == "When Unavailable in course content":
                         final_response = AI_agent.generate_ai_response(question_asked+ rag_output)
 
@@ -749,7 +754,7 @@ def main():
                     #st.markdown(final_response)
                     #st.markdown("**Sources:**")
                     #st.markdown(", ".join(sources))
-                    resp2 = st.write("### 📝 Answer\n"+final_response+"**Sources:**"+", ".join(sources))
+                    resp2 = st.write("### 📝 Answer\n"+final_response+"**Sources:**"+", ".join(sources)+resources_list)
             st.session_state.messages.append({"role": "assistant", "content": resp2})
 
         # Display QA History
