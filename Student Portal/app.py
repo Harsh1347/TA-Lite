@@ -730,7 +730,7 @@ def main():
                     #st.markdown(final_response)
                     #st.markdown("**Sources:**")
                     #st.markdown(", ".join(sources))
-            st.session_state.messages.append({"role": "assistant", "content": "### 📝 Answer\n"+response+"**Sources:**"+", ".join(sources)})
+            st.session_state.messages.append({"role": "assistant", "content": "### 📝 Answer\n"+final_response+"**Sources:**"+", ".join(sources)})
 
         # Display QA History
         if st.session_state.qa_history:
