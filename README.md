@@ -1,3 +1,5 @@
+![System](https://github.iu.edu/hagupta/TA-Lite/blob/main/SystemArchitecture.png?raw=true)
+
 ### Feature	Adds	Time
 - 👨‍🏫 Teacher dashboard (show what students are asking)	Insight for professors	1 day
 - 🧠 Adaptive hinting (more hints on request)	Feels more like a human TA	1 day
