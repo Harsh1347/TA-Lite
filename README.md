@@ -79,6 +79,7 @@ Special thanks to our course instructors and peers for valuable feedback through
 ---
 
 **Link(presentation and demo)**: https://youtu.be/oa860oWLdOo
+**Screenshots**: https://github.iu.edu/hagupta/TA-Lite/tree/main/captures
 
 **Team:** 
 - Aashi Sharma  
