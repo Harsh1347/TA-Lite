@@ -29,7 +29,7 @@ In large classroom settings, students often hesitate to ask questions, while pro
 
 ## 🔧 System Architecture
 
-![System](https://github.iu.edu/hagupta/TA-Lite/blob/main/SystemArchitecture.png?raw=true)
+![System](https://github.com/Harsh1347/TA-Lite/blob/main/SystemArchitecture.png?raw=true)
 
 
 - **Two Portals:** Teacher (configuration & upload) and Student (interaction).
