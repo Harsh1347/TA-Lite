@@ -1,5 +1,7 @@
-# TA Lite – A Modular AI Teaching Assistant for Guided Learning
+# Teaching Assistant Lite Agent 
+### A Modular AI Teaching Assistant for Guided Learning
 
+![https://github.com/Harsh1347/TA-Lite/blob/main/assets/TALIA_Thumbnail.png](https://github.com/Harsh1347/TA-Lite/blob/main/assets/TALIA_Thumbnail.png)
 ---
 
 ## 🚀 Project Motivation
